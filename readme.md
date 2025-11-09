@@ -14,12 +14,12 @@ Com o WatchtimeCV, as empresas podem mensurar o impacto visual de outdoors, pain
 - **Bibliotecas Principais:**  
   - OpenCV  
   - face_recognition
-  - Streamlit  
+  - tkinter 
 
 ---
 
 ## Desenvolvedores
 
 - **Felipe Frantz Picasso** - https://github.com/NicolasComin  
-- **Luis Henrique Fischer** - https://github.com/HiqueF
+- **Luiz Henrique Fischer** - https://github.com/HiqueF1
 - **Nicolas Comin Todero** - https://github.com/NicolasComin
