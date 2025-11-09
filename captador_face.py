@@ -2,17 +2,17 @@ import cv2
 import numpy as np
 import face_recognition
 from scipy.spatial import distance
+import pandas as pd
 
 VIDEO_INDEX = 0
 LIMIAR_EAR_ABERTO = 0.28  
 PROPORCAO_PISCADA = 0.7   
 DIST_MAX_RASTREIO = 50    
 
-
 video = cv2.VideoCapture(VIDEO_INDEX)
+
 if not video.isOpened():
-    print("Erro ao acessar a câmera!")
-    exit()
+    print("Câmera não encontrada.")
 
 frame_rate = video.get(cv2.CAP_PROP_FPS) or 30
 frame_time = 1 / frame_rate
@@ -131,6 +131,17 @@ finally:
     video.release()
     cv2.destroyAllWindows()
 
-    for rosto, tempo in rostos_tempo_olhando.items():
-        print(f"{rosto}: {tempo:.2f}s")
-    print(f"Limiar EAR final: {LIMIAR_EAR_ABERTO:.2f}")
+    if rostos_tempo_olhando:
+        df = pd.DataFrame([
+            {"Pessoa": k, "Tempo olhando (s)": round(v, 2)}
+            for k, v in rostos_tempo_olhando.items()
+        ])
+
+        csv_path = "resultados_faces.csv"
+        df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+
+        print("\n=== Resultados Salvos ===")
+        print(df)
+
+    else:
+        print("Nenhum rosto detectado — nada a salvar.")
