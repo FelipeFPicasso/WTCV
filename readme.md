@@ -13,7 +13,8 @@ Com o WatchtimeCV, as empresas podem mensurar o impacto visual de outdoors, pain
 - **Linguagem:** Python  
 - **Bibliotecas Principais:**  
   - OpenCV  
-  - face_recognition  
+  - face_recognition
+  - Streamlit  
 
 ---
 
