@@ -1,13 +1,12 @@
 import cv2
 import numpy as np
 import face_recognition
-from scipy.spatial import distance
 import pandas as pd
 
 VIDEO_INDEX = 0
-LIMIAR_EAR_ABERTO = 0.28  
-PROPORCAO_PISCADA = 0.7   
-DIST_MAX_RASTREIO = 50    
+LIMIAR_EAR_ABERTO = 0.28
+PROPORCAO_PISCADA = 0.7
+DIST_MAX_RASTREIO = 50
 
 video = cv2.VideoCapture(VIDEO_INDEX)
 
@@ -17,11 +16,13 @@ if not video.isOpened():
 frame_rate = video.get(cv2.CAP_PROP_FPS) or 30
 frame_time = 1 / frame_rate
 
-rostos_tempo_olhando = {}       
-rostos_centros = {}            
-next_id = 0                   
+rostos_tempo_olhando = {}
+rostos_centros = {}
+next_id = 0
 
 cv2.namedWindow("Detecção de Olhar", cv2.WINDOW_NORMAL)
+
+laplacianFilter = False
 
 def calcular_ear(olho):
     A = np.linalg.norm(olho[1] - olho[5])
@@ -47,6 +48,17 @@ try:
 
         frame_display = frame.copy()
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        if laplacianFilter:
+            gray = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2GRAY)
+            lap = cv2.Laplacian(gray, cv2.CV_64F)
+            lap_abs = cv2.convertScaleAbs(lap)
+            
+            rgb_frame = cv2.cvtColor(lap_abs, cv2.COLOR_GRAY2RGB)
+            frame_display = cv2.cvtColor(lap_abs, cv2.COLOR_GRAY2BGR)
+        else:
+            frame_display = frame.copy()
+
         small_frame = cv2.resize(rgb_frame, (0, 0), fx=0.5, fy=0.5)
 
         face_locations = face_recognition.face_locations(small_frame)
@@ -94,10 +106,10 @@ try:
                 if olhando_tela:
                     rostos_tempo_olhando[id_rosto] = rostos_tempo_olhando.get(id_rosto, 0) + frame_time
                     cor_rosto = (0, 255, 0)
-                    estado_rosto = "OLHANDO P/TELA"
+                    estado_rosto = "OLHANDO"
                 else:
                     cor_rosto = (0, 0, 255)
-                    estado_rosto = "DISTRAIDO"
+                    estado_rosto = "DISTRAÍDO"
 
                 cv2.rectangle(frame_display, (left, top), (right, bottom), cor_rosto, 2)
                 info_texto = f"{id_rosto}: {estado_rosto} | Olhos {olhos_abertos}/{total_olhos} | EAR {[f'{e:.2f}' for e in ears]}"
@@ -106,26 +118,19 @@ try:
         rostos_centros = novos_centros
 
         info = [
-            f"EAR Limiar: {LIMIAR_EAR_ABERTO:.2f}",
             f"Pessoas detectadas: {len(face_locations)}",
-            "Controles: +/- EAR, Q sai"
+            "Q - sair | L - Filtro Laplaciano"
         ]
         for j, txt in enumerate(info):
             cv2.putText(frame_display, txt, (10, 30 + j*25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 2)
 
         cv2.imshow("Detecção de Olhar", frame_display)
 
-        # Controles
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
-        #elif key == ord('+'):
-        #    LIMIAR_EAR_ABERTO += 0.01
-        #elif key == ord('-'):
-        #    LIMIAR_EAR_ABERTO = max(0.15, LIMIAR_EAR_ABERTO - 0.01)
-
-except KeyboardInterrupt:
-    print("Programa interrompido pelo usuário")
+        elif key == ord('l'):
+            laplacianFilter = not laplacianFilter
 
 finally:
     video.release()
@@ -136,12 +141,9 @@ finally:
             {"Pessoa": k, "Tempo olhando (s)": round(v, 2)}
             for k, v in rostos_tempo_olhando.items()
         ])
-
         csv_path = "resultados_faces.csv"
         df.to_csv(csv_path, index=False, encoding="utf-8-sig")
-
         print("\n=== Resultados Salvos ===")
         print(df)
-
     else:
         print("Nenhum rosto detectado — nada a salvar.")
