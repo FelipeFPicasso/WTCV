@@ -18,6 +18,27 @@ Com o WatchtimeCV, as empresas podem mensurar o impacto visual de outdoors, pain
 
 ---
 
+## Instalação
+
+ - Linux
+ - sudo apt install python3-tk -y
+  - sudo apt install python3-venv -y
+  - python3 -m venv .venv
+  - source .venv/bin/activate
+ - pip install pandas matplotlib numpy
+ - sudo apt install build-essential cmake -y
+ - sudo apt install libopenblas-dev liblapack-dev -y
+ - sudo apt install libx11-dev libgtk-3-dev libboost-all-dev -y
+ - pip install dlib
+ - pip install face-recognition
+
+
+
+
+
+
+---
+
 ## Desenvolvedores
 
 - **Felipe Frantz Picasso** - https://github.com/NicolasComin  
